@@ -252,6 +252,16 @@ contract Geo {
             // return Trigonometry.sin(16384 / 2);
         }
 
+
+        // Since we are working with ints we suggest passing in nanodegrees, which ~= 0.1 mm
+        // But it will work with any consistent units, so long as they are ints.
+        function boundingBoxBuffer (int[2] _point, int _buffer) public view returns (int[2][2] ) {
+            int[2] memory ll = [_point[0] - _buffer, _point[1] - _buffer];
+            int[2] memory ur = [_point[0] + _buffer, _point[1] + _buffer];
+
+            return ([ll, ur]);
+        }
+
         function pointInBbox (int[2] _point, int[2][2] _bbox) public view returns (bool ptInsideBbox_) {
             require(_bbox[0][0] < _bbox[1][0] && _bbox[0][1] < _bbox[1][1]);
             if ((_point[0] > _bbox[0][0]) && (_point[0] < _bbox[1][0]) && (_point[1] > _bbox[1][0]) && (_point[1] < _bbox[1][1]) ) {

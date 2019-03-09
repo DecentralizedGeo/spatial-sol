@@ -1,16 +1,15 @@
 pragma solidity ^0.5.2;
 
-import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol";
+/* import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol"; */
 
 
 contract Jurisdiction {
 
     address owner; // likely a jurisdiction's DAO contract address ...
-    int[2][] public boundaries;
-    int[2][2] public boundingBox;
+    int[] public boundaries;
     uint public numBoundaryPoints;
-    string name;
-    uint tax; // donation rate
+    string public name;
+    uint public tax; // donation rate
 
     /*
     @param _boundaries: An array of ints representing coordinates of boundary vertices in nanodegrees (decimal degrees * 10**9)
@@ -24,56 +23,38 @@ contract Jurisdiction {
         uint l = _boundaries.length;
 
         // Check to make sure _boundaries array is the right length
-        require(l % 2 == 0, "Please pass in an even-length boundaries array of [lon1, lat1, lon2, lat2, ... , lonN, latN");
-        // test that first point == last point
+        require(l % 2 == 0,
+            "Please pass in an even-length boundaries array of [lon1, lat1, lon2, lat2, ... , lonN, latN]");
+
         numBoundaryPoints = l;
-
-        // Convert _boundaries array into int[2][] array of point pairs:
-        // In same loop calculate bounding box
-
-        // int minLon = 180 * 10**9; // should we use nanodegrees? 😬🤔
-        // int minLat = 90 * 10**9;
-        // int maxLon = -180 * 10**9;
-        // int maxLat = -90 * 10**9;
-
-        // for (uint i = 0; i < l; i += 2) {
-        //     int[2] memory coords = [_boundaries[i], _boundaries[i + 1]];
-
-        //     if (coords[0] < minLon) {
-        //         minLon = coords[0];
-        //     }
-        //     if (coords[1] < minLat) {
-        //         minLat = coords[1];
-        //     }
-        //     if (coords[0] > maxLon) {
-        //         maxLon = coords[0];
-        //     }
-        //     if (coords[1] > maxLon) {
-        //         maxLat = coords[1];
-        //     }
-
-        //     boundaries.push(coords);
-        // }
-
-        // boundingBox = [[minLon, minLat], [maxLon, maxLat]];
-        tax = _tax;
+        boundaries = _boundaries;
         name = _name;
-
+        tax = _tax;
     }
 
-    function updateTaxRate (uint _newTaxRate) public {
-        require(msg.sender == owner);
+    modifier owned (address _account) {
+        require (msg.sender == owner, "Sorry, owner must call function");
+        _;
+    }
+
+    function updateTaxRate (uint _newTaxRate) public owned(owner) {
         tax = _newTaxRate;
     }
 
-    function transferOwnership (address _newOwner) public {
-        require(msg.sender == owner);
+    function transferOwnership (address _newOwner) public owned(owner)  {
         owner = _newOwner;
     }
 
-    function updateJurisdictionName (string memory _newName) public {
-        require(msg.sender == owner);
+    function updateJurisdictionName (string memory _newName) public owned(owner)  {
         name = _newName;
+    }
+
+    function sendFunds () public payable {
+
+    }
+
+    function getBalance () public view returns (uint balance_) {
+        return address(this).balance;
     }
 
 }
@@ -85,16 +66,21 @@ contract LocationAwareWallet {
 
 
     address owner;
-    address[] jurisdictions; // to test within for each transaction
+    address[] subscribedJurisdictions; // to test within for each transaction
 
-    constructor (address _owner, address[] memory _jurisdictions) public {
-        owner = _owner;
-        jurisdictions = _jurisdictions;
+
+    constructor (address[] memory _jurisdictions) public payable {
+        owner = msg.sender;
+        subscribedJurisdictions = _jurisdictions;
     }
 
     // do we need this? Maybe owner includes funds with each .send() invocation
     function addFunds () public payable {
+        // require(_value == msg.value);
+    }
 
+    function getBalance () public view returns (uint balance_) {
+        return address(this).balance;
     }
 
     /*
@@ -104,31 +90,35 @@ contract LocationAwareWallet {
       address payable _to,
       int[2] memory _locationOfOwner,
       uint _value)
-      public returns (
-        string memory jurisdiction_)
+      public
       {
 
         require(msg.sender == owner);
 
-        uint numJurisdictionsToCheck = jurisdictions.length;
+        uint numJurisdictionsToCheck = subscribedJurisdictions.length;
 
         for (uint i = 0; i < numJurisdictionsToCheck; i++) {
 
-            address jurisdictionAddress = jurisdictions[i];
-            // int[2][] memory jurisdictionPolygon = fetchJurisdictionPolygon(jurisdictionAddress);
+            address jurisdictionAddress = subscribedJurisdictions[i];
 
             Jurisdiction jurisdiction = Jurisdiction(jurisdictionAddress);
-
             uint jurisdictionBoundariesLength = jurisdiction.numBoundaryPoints();
-            int[] memory jurisdictionBoundaries = new int[](jurisdictionBoundariesLength);
 
-            if (withinJurisdictionBoundaries(_locationOfOwner, jurisdictionBoundaries) == true) {
+            int[] memory jurisdictionBoundary = new int[](jurisdictionBoundariesLength);
+
+            for (uint j = 0; j < jurisdictionBoundariesLength; j++) {
+                jurisdictionBoundary[j] = jurisdiction.boundaries(j);
+            }
+
+            if (withinJurisdictionBoundaries(_locationOfOwner, jurisdictionBoundary) == true) {
                 // transmit value to sender
+
                 address(_to).transfer(_value);
 
                 // transmit tax to jurisdiction
+                jurisdiction.sendFunds.value(_value * jurisdiction.tax() / 100);
 
-                return getJurisdictionName(jurisdictionAddress);
+                // return "HY";
                 // return jurisdictionAddress;
             }
         }
@@ -149,15 +139,6 @@ contract LocationAwareWallet {
         } else {
             return false;
         }
-    }
-
-
-    function fetchJurisdictionBbox(address _jurisdiction) public returns (int[2][2] memory jurisdictionBbox_) {
-
-    }
-
-    function fetchJurisdictionBoundaries(address _jurisdictionAddress) public returns (int[2][] memory jurisdictionBoundaries_) {
-
     }
 
     function withinJurisdictionBoundaries (int[2] memory _point, int[] memory _jurisdictionBoundaries) public returns (bool) {
