@@ -1,0 +1,25 @@
+{
+  "name": "eth-paris",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robisoniv/ethparis.git"
+  },
+  "author": "John IV",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/robisoniv/ethparis/issues"
+  },
+  "homepage": "https://github.com/robisoniv/ethparis#readme",
+  "dependencies": {
+    "@turf/turf": "^5.1.6"
+  }
+}
