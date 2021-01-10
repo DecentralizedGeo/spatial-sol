@@ -4,7 +4,8 @@ _A library of geometric and topological functions in Solidity, to enable geospat
 
 At Astral we are building tools to enable an ecosystem of location-based dApps and spatial contracts. `Spatial.sol` is a project started by @johnx25bd at ETHParis 2019 to enable on-chain geospatial analytics. The ✨ Astral team is picking this work up to support our work building verifiable spatial data registries and universal check-ins for Web3.
 
-Here's is John's write-up from ETHParis giving insight into the project. You can find the (hyper alpha) Spatial.sol library [here](./contracts/Spatial.sol)
+Below is John's write-up from ETHParis giving insight into the project. You can find the (hyper alpha) Spatial.sol library [here](./contracts/Spatial.sol)
+
 ## Inspiration
 
 Imagining a future where much of our digital interaction - especially transfer of value - occurs on chain, what opportunities do smart contracts offer for innovative forms of governance? As I see it, we each engage in a social contract to adhere to two forms of governance: identity-based and location-based. Identity-based governance mechanisms are most often opt in, though smart contracts may enforce these more successfully. Location-based governance mechanisms depend on where our bodies are on the Earth: which jurisdiction we are in.
