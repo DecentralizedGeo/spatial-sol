@@ -1,5 +1,6 @@
 pragma solidity ^0.5.2;
 
+// A demo contract showcasing a possible application built with Spatial.sol
 
 contract Jurisdiction {
 

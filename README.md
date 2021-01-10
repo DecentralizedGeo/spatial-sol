@@ -1,3 +1,10 @@
+# `Spatial.sol`
+
+_A library of geometric and topological functions in Solidity, to enable geospatial analytics in EVM-compatible smart contracts_
+
+At Astral we are building tools to enable an ecosystem of location-based dApps and spatial contracts. `Spatial.sol` is a project started by @johnx25bd at ETHParis 2019 to enable on-chain geospatial analytics. The ✨ Astral team is picking this work up to support our work building verifiable spatial data registries and universal check-ins for Web3.
+
+Here's is John's write-up from ETHParis giving insight into the project. You can find the (hyper alpha) Spatial.sol library [here](./contracts/Spatial.sol)
 ## Inspiration
 
 Imagining a future where much of our digital interaction - especially transfer of value - occurs on chain, what opportunities do smart contracts offer for innovative forms of governance? As I see it, we each engage in a social contract to adhere to two forms of governance: identity-based and location-based. Identity-based governance mechanisms are most often opt in, though smart contracts may enforce these more successfully. Location-based governance mechanisms depend on where our bodies are on the Earth: which jurisdiction we are in.
@@ -6,13 +13,15 @@ I wanted to build the logic to detect where an account owner was, and execute co
 
 ## What it does
 
-The MVP implementation of the dapp detects the account owner's location (using their browser - though I'm looking forward to the FOAM dynamic proof of location protocol to provide a more secure and irrefutable location service) and automatically sends a small additional payment to contracts controlled by their containing jurisdiction, if they've opted in. Of course, sending funds is just the tip of the iceberg: any contract code could be executed with location (and time) as a condition.
+This describes the `LocationAware.sol` contracts [here](.contracts/LocationAware.sol). This is a wallet contract that can use location as a condition in method execution - transferring assets only if someone is in a particular zone. 
+
+The MVP implementation of the dapp detects the account owner's location (using their browser - though I'm looking forward to the [FOAM dynamic proof of location](https://foam.space/location) network to provide a more secure and irrefutable localizion service) and automatically sends a small additional payment to contracts controlled by their containing jurisdiction, if they've opted in. Of course, sending funds is just the tip of the iceberg: any contract code could be executed with location (and time) as a condition. 
 
 ## How I built it
 
-I came to ETHParis to write a spatial abstraction library in Solidity, translating a library like Turf.js (which I used heavily in this project), or the spatial functions available in PySAL or the PostGIS extension of PostgreSQL. These are common algorithms, but I haven't seen them implemented in Ethereum, most likely because they are computationally intensive, rely on geometric functions like sine and cosine, and most usually can be solved with testing if a point is within a bounding box.
+I came to ETHParis to write a spatial abstraction library in Solidity, translating a library like [Turf.js](https://turfjs.org/) (which I used heavily as inspiration in this project), or the spatial functions available in [PySAL](https://pysal.org/) or the [PostGIS](https://postgis.net/) extension of PostgreSQL. These are common algorithms, but I haven't seen them implemented in Ethereum, most likely because they are computationally intensive, rely on geometric functions like sine and cosine, and most usually can be solved with testing if a point is within a bounding box.
 
-After translating several of the most commonly used functions from the Turf library, I decided to demonstrate the library through a use case. This centered on my goal to implement the `pointInPolygon` algorithm in Solidity - see [Tom Macwright's excellent Observable notebook](https://observablehq.com/@tmcw/understanding-point-in-polygon) explaining [James Halliday's original github post](https://github.com/substack/point-in-polygon). Based on this function I created a set of interacting contracts to demonstrate the functionality.
+After translating a number of the most commonly used functions from the Turf library, I decided to demonstrate the library through a use case. This centered on my goal to implement the `pointInPolygon` algorithm in Solidity - see [Tom Macwright's excellent Observable notebook](https://observablehq.com/@tmcw/understanding-point-in-polygon) explaining [James Halliday's original github post](https://github.com/substack/point-in-polygon). Based on this function I created a set of interacting contracts to demonstrate the functionality.
 
 Jurisdictions control instances of a Jurisdiction contract - I imagined a jurisdiction to be a municipality, but any geographic entity could participate - and define their boundaries and "tax rate". People control instances of the LocationAware contract, which is holds funds and applies conditions to any transaction before they are transmitted to the intended recipient. LocationAware contract owners can "subscribe" to Jurisdiction contracts, opting in to have their location tested to see if they are within a jurisdiction when they send the transaction. If so, the recipient receives their value transfer and the Jurisdiction contract is sent an additional proportion, based on their tax rate.
 
@@ -20,7 +29,7 @@ Jurisdictions control instances of a Jurisdiction contract - I imagined a jurisd
 
 First off, the fact that the EVM doesn't handle float values added a fair bit of confusion, even if theoretically the functions are (mostly the same). Writing helper functions to convert degrees to nanoradians in the spatial abstraction library, for example, was tricky - I tried to commit to scaling everything by 10**9, but it was difficult to keep track of.
 
-Further, basic math functions like square root, sine and cosine are not native to solidity like the Math object is in Javascript. I found some really good resources - [Richard Horrocks' implementation of the Bablylonian method for finding square roots](https://ethereum.stackexchange.com/questions/2910/can-i-square-root-in-solidity) and [Sikorka's trigonometry library](https://github.com/Sikorkaio/sikorka/blob/master/contracts/trigonometry.sol), though found other functions missing - atan, for example, required to calculate the compass bearing from one point to another. Calculating distance on the earth's surface turned out to elude me as the Haversine formula is pretty heavy. A blessing, maybe, because this stumbling block inspired me to shift into building the demo now deployed on the Ropsten testnet.
+Further, basic math functions like square root, sine and cosine are not native to solidity like the Math object is in Javascript. I found some really good resources - [Richard Horrocks' implementation of the Babylonian method for finding square roots](https://ethereum.stackexchange.com/questions/2910/can-i-square-root-in-solidity) and [Sikorka's trigonometry library](https://github.com/Sikorkaio/sikorka/blob/master/contracts/trigonometry.sol), though found other functions missing - `atan`, for example, required to calculate the compass bearing from one point to another. Calculating distance on the earth's surface turned out to elude me as the [Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula) is pretty heavy. A blessing, maybe, because this stumbling block inspired me to shift into building the demo now deployed on the Ropsten testnet.
 
 Another major stumbling block for me (this is my first real independent Solidity program) was how tricky dealing with dynamic arrays are in Solidity. I ended up deciding to use a standard format for a 1-dimensional array of `int`s to represent the [lon,lat] coordinates that form boundary vertices, but not after a while bashing around with trying to access `int[2][]` arrays from another contract address.
 
@@ -35,6 +44,8 @@ Prep - do more research and practice before the hackathon.
 As my friend Yakko said : "There's no point in using truffle from the get go. Only to look cool. You try to compile. Fails. Remix tells you everything straight up. It's a very good tool." The challenges of developing in Remix (a few crashes, tiny UI, bright lights in my eyes) were so far outweighed by the instant feedback I got on bugs - really good for learning how the language works.
 
 Spatial functions on the EVM are possible.
+
+And at hackathons: focus on the story and the interfaces. Big ideas don't show in code or text. Hackathon judges have 4 minutes so show them something snazzy.
 
 ## What's next for Location Aware Wallet Contract
 
