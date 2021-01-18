@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "> TODO: description",
   "author": "Astral <contact@astral.global>",
-  "homepage": "https://github.com/AstralProtocol/astralprotocol#readme",
+  "homepage": "https://github.com/AstralProtocol/spatial-sol#readme",
   "license": "ISC",
   "main": "truffle-config.js",
   "directories": {
@@ -32,7 +32,7 @@
     "url": "git+https://github.com/AstralProtocol/spatial-sol.git"
   },
   "bugs": {
-    "url": "https://github.com/AstralProtocol/astralprotocol/issues",
+    "url": "https://github.com/AstralProtocol/spatial-sol/issues",
     "access": "public"
   },
   "dependencies": {

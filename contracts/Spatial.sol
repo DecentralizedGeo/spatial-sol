@@ -292,7 +292,7 @@ library Spatial {
         // Really helpful explanation by Tom MacWright on Observable,
         // https://observablehq.com/@tmcw/understanding-point-in-polygon
         // Caution: Would be easy to run out of gas by sending complex geometries.
-        function pointInPolygon (int[2] memory _point, int[] memory _polygon) public pure returns (bool pointInsidePolygon_) {
+        function pointInPolygon (int[2] memory _point, int[] memory _polygon) public pure returns (bool pointInsidePolygon) {
 
         int x = _point[0];
         int y = _point[1];
@@ -300,7 +300,7 @@ library Spatial {
         uint j = _polygon.length - 2;
         uint l = _polygon.length;
 
-        bool inside = false;
+        bool pointInsidePolygon = false;
         for (uint i = 0; i < l - 1; i = i + 2) {
 
             int xi = _polygon[i];
@@ -313,9 +313,9 @@ library Spatial {
             bool intersect = ((yi > y) != (yj > y)) &&
                 (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
 
-            if (intersect) inside = !inside;
+            if (intersect) pointInsidePolygon = !pointInsidePolygon;
         }
-        return inside;
+        return pointInsidePolygon;
 
     }
 
