@@ -1,23 +1,19 @@
 // SPDX-License-Identifier: APACHE OR MIT
 
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 /*
     This library is intended to give Ethereum developers access to spatial functions to calculate
     geometric values and topologicial relationships on the EVM. It is a translation of Turf.js,
     a geospatial analysis library in Javascript. http://turfjs.org/
-    Code first developed by John IV (@johnx25bd) at ETHParis 2019.
+    Code first developed by John IV (@johnx25bd, Founder at Astral) at ETHParis 2019.
 */
 
 import "./Trigonometry.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
 
-contract Spatial {
-
-        using SafeMath for uint256;
-
-        uint256 public earthRadius = 6371008800000000; // in nanometers,
-        uint256 public piScaled = 3141592654; // approx ... will affect precision
+library Spatial {
+        uint256 public constant earthRadius = 6371008800000000; // in nanometers,
+        uint256 public constant piScaled = 3141592654; // approx ... will affect precision
 
         /*
         Trigonemtric functions
@@ -93,25 +89,25 @@ contract Spatial {
         /*
         Conversion helper functions
         */
-        function degreesToNanoradians(uint256 _degrees) public view returns (uint256 radians_ ) {
+        function degreesToNanoradians(uint256 _degrees) public pure returns (uint256 radians_ ) {
             return nanodegreesToNanoradians(_degrees * 10**9);
         }
 
-        function nanodegreesToNanoradians(uint256 _nanodegrees) public view returns (uint256 radians_ ) {
+        function nanodegreesToNanoradians(uint256 _nanodegrees) public pure returns (uint256 radians_ ) {
             uint256 nanodegrees = _nanodegrees % (360 * 10**9);
             return nanodegrees * ( piScaled / 180 ) / 10**9;
         }
 
-        function nanoradiansToDegrees (uint256 _nanoradians ) public view returns (uint256 degrees_) {
+        function nanoradiansToDegrees (uint256 _nanoradians ) public pure returns (uint256 degrees_) {
             return ( 180 * _nanoradians ) / piScaled;
         }
 
         //
-        function earthNanoradiansToNanometers (uint256 _nanoradians) public view returns (uint256 nanometers_) {
+        function earthNanoradiansToNanometers (uint256 _nanoradians) public pure returns (uint256 nanometers_) {
             return (_nanoradians * earthRadius) / 10**9;
         }
 
-        function earthNanodegreesToNanometers (uint256 _nanodegrees) public view returns (uint256 nanometers_) {
+        function earthNanodegreesToNanometers (uint256 _nanodegrees) public pure returns (uint256 nanometers_) {
             return earthNanoradiansToNanometers(nanodegreesToNanoradians(_nanodegrees));
         }
 
@@ -291,29 +287,66 @@ contract Spatial {
             }
         }
 
-        // Tests whether point is in polygon
-        function pointInPolygon (int256[2] memory _point, int256[2][] memory _polygon ) public pure returns (bool pointInsidePolygon_) {
+        // Translated from the impressive Javascript implementation by substack,
+        // https://github.com/substack/point-in-polygon/blob/master/index.js
+        // Really helpful explanation by Tom MacWright on Observable,
+        // https://observablehq.com/@tmcw/understanding-point-in-polygon
+        // Caution: Would be easy to run out of gas by sending complex geometries.
+        function pointInPolygon (int[2] memory _point, int[] memory _polygon) public pure returns (bool pointInsidePolygon_) {
 
-                int256 x = _point[0];
-                int256 y = _point[1];
+        int x = _point[0];
+        int y = _point[1];
 
-                uint256 j = _polygon.length - 1;
-                uint256 l = _polygon.length;
+        uint j = _polygon.length - 2;
+        uint l = _polygon.length;
 
-                bool inside = false;
-                for (uint256 i = 0; i < l; j = i++) {
+        bool inside = false;
+        for (uint i = 0; i < l - 1; i = i + 2) {
 
-                    int256 xi = _polygon[i][0];
-                    int256 yi = _polygon[i][1];
-                    int256 xj = _polygon[j][0];
-                    int256 yj = _polygon[j][1];
+            int xi = _polygon[i];
+            int yi = _polygon[i + 1];
+            int xj = _polygon[j];
+            int yj = _polygon[j + 1];
 
-                    bool intersect = ((yi > y) != (yj > y)) &&
-                        (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            j = i;
 
-                    if (intersect) inside = !inside;
-                }
-                return inside;
+            bool intersect = ((yi > y) != (yj > y)) &&
+                (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
 
+            if (intersect) inside = !inside;
+        }
+        return inside;
+
+    }
+
+        
+    /*
+
+    This function was inside Topo.sol 
+    function pointInPolygon (int256[2] memory _point, int256[2][] memory _polygon ) public pure returns (bool pointInsidePolygon_) {
+
+            int256 x = _point[0];
+            int256 y = _point[1];
+
+            uint256 j = _polygon.length - 1;
+            uint256 l = _polygon.length;
+
+            bool inside = false;
+            for (uint256 i = 0; i < l; j = i++) {
+
+                int256 xi = _polygon[i][0];
+                int256 yi = _polygon[i][1];
+                int256 xj = _polygon[j][0];
+                int256 yj = _polygon[j][1];
+
+                bool intersect = ((yi > y) != (yj > y)) &&
+                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+
+                if (intersect) inside = !inside;
             }
+            return inside;
+
+    }
+        
+    */
 }
