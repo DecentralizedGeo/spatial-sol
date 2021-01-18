@@ -1,7 +1,18 @@
-const LocationAware = artifacts.require("LocationAware");
-const Jurisdiction = artifacts.require("Jurisdiction");
+const Trigonometry = artifacts.require("Trigonometry");
+const Spatial = artifacts.require("Spatial");
 
-module.exports = function (deployer) {
-  deployer.deploy(Jurisdiction);
-  deployer.deploy(LocationAware);
-}
+
+module.exports = async function (deployer) {
+  await deployer.deploy(Trigonometry);
+
+  await deployer.link(Trigonometry, [Spatial]);
+
+  await deployer.deploy(Spatial);
+
+  const SpatialContract = await Spatial.deployed();
+
+  console.log(
+    "Spatial-Sol deployed at:",
+    SpatialContract.address
+  );
+};

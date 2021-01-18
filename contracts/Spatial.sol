@@ -1,5 +1,6 @@
-pragma solidity ^0.4.17;
+// SPDX-License-Identifier: APACHE OR MIT
 
+pragma solidity ^0.7.0;
 
 /*
     This library is intended to give Ethereum developers access to spatial functions to calculate
@@ -8,36 +9,36 @@ pragma solidity ^0.4.17;
     Code first developed by John IV (@johnx25bd) at ETHParis 2019.
 */
 
-import "github.com/Sikorkaio/sikorka/contracts/trigonometry.sol";
-import "github.com/bokkypoobah/SimpleTokenCrowdsaleContractAudit/contracts/SafeMath.sol";
+import "./Trigonometry.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
-contract Geo {
+contract Spatial {
 
-        using SafeMath for uint;
+        using SafeMath for uint256;
 
-        uint earthRadius = 6371008800000000; // in nanometers,
-        uint piScaled = 3141592654; // approx ... will affect precision
+        uint256 public earthRadius = 6371008800000000; // in nanometers,
+        uint256 public piScaled = 3141592654; // approx ... will affect precision
 
         /*
         Trigonemtric functions
         */
-        function sinDegrees (uint _degrees) public pure returns (int) {
-            uint degrees = _degrees % 360;
+        function sinDegrees (uint256 _degrees) public pure returns (int256) {
+            uint256 degrees = _degrees % 360;
             uint16 angle16bit = uint16((degrees * 16384) / 360);
             return Trigonometry.sin(angle16bit);
         }
 
-        function sinNanodegrees (uint _nanodegrees) public pure returns (int) {
+        function sinNanodegrees (uint256 _nanodegrees) public pure returns (int256) {
             return sinDegrees(_nanodegrees / 10 ** 9 );
         }
 
-        function cosDegrees (uint _degrees) public pure returns (int) {
-            uint degrees = _degrees % 360;
+        function cosDegrees (uint256 _degrees) public pure returns (int256) {
+            uint256 degrees = _degrees % 360;
             uint16 angle16bit = uint16((degrees * 16384) / 360);
             return Trigonometry.cos(angle16bit);
         }
 
-        function cosNanodegrees (uint _nanodegrees) public pure returns (int) {
+        function cosNanodegrees (uint256 _nanodegrees) public pure returns (int256) {
             return cosDegrees(_nanodegrees / 10 ** 9 );
         }
 
@@ -46,9 +47,8 @@ contract Geo {
         */
 
         // Checks to make sure first and last coordinates are the same. Otherwise it is a linestring.
-        function isPolygon (int[2][] _coordinates) public pure returns (bool) {
-
-            uint l = _coordinates.length;
+        function isPolygon (int256[2][] memory _coordinates) public pure returns (bool) {
+            uint256 l = _coordinates.length;
             if ((l > 2) &&
                 (_coordinates[0][0] == _coordinates[l - 1][0]) &&
                 (_coordinates[0][1] == _coordinates[l - 1][1]))
@@ -59,8 +59,8 @@ contract Geo {
             }
         }
 
-        function isLine (int[2][] _coordinates) public pure returns (bool) {
-            uint l = _coordinates.length;
+        function isLine (int256[2][] memory _coordinates) public pure returns (bool) {
+            uint256 l = _coordinates.length;
 
             if ((l > 1) &&
                 ((_coordinates[0][0] != _coordinates[l - 1][0]) ||
@@ -74,15 +74,15 @@ contract Geo {
 
         // Babylonian method of finding square root,
         // From https://ethereum.stackexchange.com/questions/2910/can-i-square-root-in-solidity
-        function sqrt (int _x) public view returns (uint y_) {
+        function sqrt (int256 _x) public pure returns (uint256 y_) {
 
             if (_x < 0) {
                 _x = _x * -1;
             }
 
-            uint x = uint(_x);
+            uint256 x = uint256(_x);
 
-            uint z = (x + 1) / 2;
+            uint256 z = (x + 1) / 2;
             y_ = x;
             while (z < y_) {
                 y_ = z;
@@ -93,25 +93,25 @@ contract Geo {
         /*
         Conversion helper functions
         */
-        function degreesToNanoradians(uint _degrees) public view returns (uint radians_ ) {
+        function degreesToNanoradians(uint256 _degrees) public view returns (uint256 radians_ ) {
             return nanodegreesToNanoradians(_degrees * 10**9);
         }
 
-        function nanodegreesToNanoradians(uint _nanodegrees) public view returns (uint radians_ ) {
-            uint nanodegrees = _nanodegrees % (360 * 10**9);
+        function nanodegreesToNanoradians(uint256 _nanodegrees) public view returns (uint256 radians_ ) {
+            uint256 nanodegrees = _nanodegrees % (360 * 10**9);
             return nanodegrees * ( piScaled / 180 ) / 10**9;
         }
 
-        function nanoradiansToDegrees (uint _nanoradians ) public view returns (uint degrees_) {
+        function nanoradiansToDegrees (uint256 _nanoradians ) public view returns (uint256 degrees_) {
             return ( 180 * _nanoradians ) / piScaled;
         }
 
         //
-        function earthNanoradiansToNanometers (uint _nanoradians) public view returns (uint nanometers_) {
+        function earthNanoradiansToNanometers (uint256 _nanoradians) public view returns (uint256 nanometers_) {
             return (_nanoradians * earthRadius) / 10**9;
         }
 
-        function earthNanodegreesToNanometers (uint _nanodegrees) public view returns (uint nanometers_) {
+        function earthNanodegreesToNanometers (uint256 _nanodegrees) public view returns (uint256 nanometers_) {
             return earthNanoradiansToNanometers(nanodegreesToNanoradians(_nanodegrees));
         }
 
@@ -122,7 +122,7 @@ contract Geo {
             this will be fine, but the further they are the greater the underestimation error.
         WARNING: NOT WORKING YET!!
         */
-        function distance (int[2] ptA, int[2] ptB) public view returns (uint distanceNanometers_) {
+        function distance (int[2] memory ptA, int[2] memory ptB) public view returns (uint distanceNanometers_) {
 
             /* int x1 = ptA[0];
             int y1 = ptA[1];
@@ -138,61 +138,61 @@ contract Geo {
 
         // https://www.mathopenref.com/coordpolygonarea.html
         // Only accepts simple polygons, not multigeometry polygons
-        function area ( int[2][] _coordinates ) public view returns (uint area_) {
+        function area (int256[2][] memory _coordinates ) public pure returns (uint256 area_) {
             require(isPolygon(_coordinates) == true);
 
-            uint l = _coordinates.length;
+            uint256 l = _coordinates.length;
 
-            int counter = 0;
-            for (uint i = 0; i < l; i++) {
+            int256 counter = 0;
+            for (uint256 i = 0; i < l; i++) {
 
-                int clockwiseCounter = _coordinates[i][0] * _coordinates[i + 1][1];
-                int anticlockwiseCounter = _coordinates[i][1] * _coordinates[i + 1][0];
+                int256 clockwiseCounter = _coordinates[i][0] * _coordinates[i + 1][1];
+                int256 anticlockwiseCounter = _coordinates[i][1] * _coordinates[i + 1][0];
 
                 counter += clockwiseCounter - anticlockwiseCounter;
             }
 
-            return uint(counter / 2);
+            return uint256(counter / 2);
         }
 
 
         // Returns centroid of group of points or
-        function centroid (int[2][] _coordinates) public view returns (int[2]) {
+        function centroid (int256[2][] memory _coordinates) public pure returns (int256[2] memory) {
 
-            int l;
+            int256 l;
             if (isPolygon(_coordinates) == true) {
-                l = int(_coordinates.length) - 1;
+                l = int256(_coordinates.length) - 1;
             } else {
-                l = int(_coordinates.length);
+                l = int256(_coordinates.length);
             }
 
-            int lonTotal = 0;
-            int latTotal = 0;
+            int256 lonTotal = 0;
+            int256 latTotal = 0;
 
-            for (uint i = 0; i < uint(l); i++) {
+            for (uint256 i = 0; i < uint256(l); i++) {
                 lonTotal += _coordinates[i][0];
                 latTotal += _coordinates[i][1];
             }
 
-            int lonCentroid = lonTotal / l;
-            int latCentroid = latTotal / l;
+            int256 lonCentroid = lonTotal / l;
+            int256 latCentroid = latTotal / l;
 
             return [lonCentroid, latCentroid];
         }
 
         // Returns bounding box of geometry as [[minLon, minLat], [maxLon, maxLat]]
-        function boundingBox (int[2][] _coordinates) public view returns (int[2][2]) {
+        function boundingBox (int256[2][] memory _coordinates) public pure returns (int256[2][2] memory) {
 
             require(_coordinates.length != 1); // A bounding box needs to contain at least two points.
 
-            int minLon = 180 * 10**9;
-            int minLat = 90 * 10**9;
-            int maxLon = -180 * 10**9;
-            int maxLat = -90 * 10**9;
+            int256 minLon = 180 * 10**9;
+            int256 minLat = 90 * 10**9;
+            int256 maxLon = -180 * 10**9;
+            int256 maxLat = -90 * 10**9;
 
-            int l = int(_coordinates.length);
+            int256 l = int256(_coordinates.length);
 
-            for ( uint i = 0; i < uint(l); i++ ) {
+            for (uint256 i = 0; i < uint256(l); i++ ) {
                 if (_coordinates[i][0] < minLon) {
                     minLon = _coordinates[i][0];
                 }
@@ -212,7 +212,7 @@ contract Geo {
 
         // Returns length of linestring
         // NOTE: Not working yet. Relies on distance()
-        function length (int[2][] _coordinates) public view returns (uint length_) {
+        function length (int256[2][] memory _coordinates) public view returns (uint256 length_) {
 
             /* require (isLine(_coordinates) == true);
             uint l = _coordinates.length;
@@ -226,7 +226,7 @@ contract Geo {
 
         // Returns perimeter of polygon
         // NOTE: Not working yet. Relies on distance()
-        function perimeter (int[2][] _coordinates ) public view returns (uint perimeter_) {
+        function perimeter (int256[2][] memory _coordinates ) public view returns (uint256 perimeter_) {
 /*
             require (isPolygon(_coordinates) == true);
             uint l = _coordinates.length;
@@ -247,11 +247,11 @@ contract Geo {
         accurately? Probably - more research needed ....
         */
 
-        function distanceBetweenAzimuthalEquidistantProjectedPoints(uint[2] ptA, uint[2] ptB) public view returns (uint) {
-          _;
+        function distanceBetweenAzimuthalEquidistantProjectedPoints(uint256[2] memory ptA, uint256[2] memory ptB) public view returns (uint256) {
+          //
         }
 
-        function bearingFromAzimuthalEquidistantProjectedPoints ( uint[2] ptA, uint[2] ptB ) public view returns (uint) {
+        function bearingFromAzimuthalEquidistantProjectedPoints ( uint256[2] memory ptA, uint256[2] memory ptB ) public view returns (uint256) {
 
             // uint lonA = ptA[0];
             // uint lonB = ptB[0];
@@ -272,9 +272,9 @@ contract Geo {
         // Since we are working with ints we suggest passing in nanodegrees, which ~= 0.1 mm
         // But it will work with any consistent units, so long as they are ints.
         // This is much cheaper than using radial buffer
-        function boundingBoxBuffer (int[2] _point, int _buffer) public view returns (int[2][2] ) {
-            int[2] memory ll = [_point[0] - _buffer, _point[1] - _buffer];
-            int[2] memory ur = [_point[0] + _buffer, _point[1] + _buffer];
+        function boundingBoxBuffer (int256[2] memory _point, int256 _buffer) public pure returns (int256[2][2] memory) {
+            int256[2] memory ll = [_point[0] - _buffer, _point[1] - _buffer];
+            int256[2] memory ur = [_point[0] + _buffer, _point[1] + _buffer];
 
             return ([ll, ur]);
         }
@@ -282,7 +282,7 @@ contract Geo {
         // Boolean functions:
 
         // Returns whether _point exists within bounding box
-        function pointInBbox (int[2] _point, int[2][2] _bbox) public view returns (bool ptInsideBbox_) {
+        function pointInBbox (int256[2] memory _point, int256[2][2] memory _bbox) public pure returns (bool ptInsideBbox_) {
             require(_bbox[0][0] < _bbox[1][0] && _bbox[0][1] < _bbox[1][1]);
             if ((_point[0] > _bbox[0][0]) && (_point[0] < _bbox[1][0]) && (_point[1] > _bbox[1][0]) && (_point[1] < _bbox[1][1]) ) {
                 return true;
@@ -292,21 +292,21 @@ contract Geo {
         }
 
         // Tests whether point is in polygon
-        function pointInPolygon (int[2] memory _point, int[2][] memory _polygon ) public returns (bool pointInsidePolygon_) {
+        function pointInPolygon (int256[2] memory _point, int256[2][] memory _polygon ) public pure returns (bool pointInsidePolygon_) {
 
-                int x = _point[0];
-                int y = _point[1];
+                int256 x = _point[0];
+                int256 y = _point[1];
 
-                uint j = _polygon.length - 1;
-                uint l = _polygon.length;
+                uint256 j = _polygon.length - 1;
+                uint256 l = _polygon.length;
 
                 bool inside = false;
-                for (uint i = 0; i < l; j = i++) {
+                for (uint256 i = 0; i < l; j = i++) {
 
-                    int xi = _polygon[i][0];
-                    int yi = _polygon[i][1];
-                    int xj = _polygon[j][0];
-                    int yj = _polygon[j][1];
+                    int256 xi = _polygon[i][0];
+                    int256 yi = _polygon[i][1];
+                    int256 xj = _polygon[j][0];
+                    int256 yj = _polygon[j][1];
 
                     bool intersect = ((yi > y) != (yj > y)) &&
                         (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
