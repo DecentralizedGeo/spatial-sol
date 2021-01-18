@@ -1,25 +1,43 @@
 {
-  "name": "eth-paris",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app/index.js",
+  "name": "spatial-sol",
+  "version": "0.0.1",
+  "description": "> TODO: description",
+  "author": "Astral <contact@astral.global>",
+  "homepage": "https://github.com/AstralProtocol/astralprotocol#readme",
+  "license": "ISC",
+  "main": "truffle-config.js",
   "directories": {
-    "test": "test"
+    "build": "build",
+    "contracts": "contracts",
+    "migrations": "migrations"
   },
+  "files": [
+    "build"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "tsc": "tsc",
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "console": "truffle console --network development",
+    "ganache": "ganache-cli -h 0.0.0.0 -p 8545 -d -b 3 -i 333",
+    "truffle-build": "truffle compile -all",
+    "truffle": "truffle compile --all && truffle migrate --network development --reset",
+    "truffle-ropsten": "truffle compile --all && truffle migrate --network ropsten --reset && cp -vr ./build/contracts/SpatialAssets.json ../subgraph/abis/SpatialAssets.json",
+    "mythx": "truffle run verify",
+    "slither": "slither .",
+    "truffle-test": "truffle test",
+    "coverage": "truffle run coverage --solcoverjs ./.solcover.js --network development"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/robisoniv/ethparis.git"
+    "url": "git+https://github.com/AstralProtocol/spatial-sol.git"
   },
-  "author": "John IV",
-  "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/robisoniv/ethparis/issues"
+    "url": "https://github.com/AstralProtocol/astralprotocol/issues",
+    "access": "public"
   },
-  "homepage": "https://github.com/robisoniv/ethparis#readme",
   "dependencies": {
-    "@turf/turf": "^5.1.6"
+    "@truffle/hdwallet-provider": "^1.2.1",
+    "@turf/turf": "^5.1.6",
+    "truffle": "^5.1.62"
   }
 }
