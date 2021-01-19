@@ -21,10 +21,12 @@
     "ganache": "ganache-cli -h 0.0.0.0 -p 8545 -d -i 333",
     "truffle-build": "truffle compile -all",
     "truffle": "truffle compile --all && truffle migrate --network development --reset",
-    "truffle-ropsten": "truffle compile --all && truffle migrate --network ropsten --reset && cp -vr ./build/contracts/SpatialAssets.json ../subgraph/abis/SpatialAssets.json",
+    "truffle-ropsten": "truffle compile --all && truffle migrate --network ropsten --reset",
+    "truffle-matic": "truffle compile --all && truffle migrate --network matic --reset",
     "mythx": "truffle run verify",
     "slither": "slither .",
     "truffle-test": "truffle test",
+    "truffle-test-matic": "truffle test --network matic",
     "coverage": "truffle run coverage --solcoverjs ./.solcover.js --network development"
   },
   "repository": {
