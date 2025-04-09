@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: APACHE OR MIT
 
+
 pragma solidity ^0.8.0;
 
 /*
+    THIS IS A RESEARCH CODEBASE: WE WILL BE DEVELOPING Spatial.sol v0 SOON — 
+    We just want to keep this up for reference. The production implementation
+    will likely use very different data structures and algorithms due to 
+    the constraints of the EVM.
+
     This library is intended to give Ethereum developers access to spatial functions to calculate
     geometric values and topologicial relationships on the EVM. It is essentially a translation of
     Turf.js, a geospatial analysis library in Javascript. http://turfjs.org/
